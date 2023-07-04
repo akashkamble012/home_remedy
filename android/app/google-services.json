@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "1030152520048",
+    "project_id": "home-remedy-e9407",
+    "storage_bucket": "home-remedy-e9407.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1030152520048:android:d3d97e176d24690af38fb5",
+        "android_client_info": {
+          "package_name": "com.example.home_remedy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1030152520048-ege1191svnn7ouu17kli97rf07ec365r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1zVVVZbVTWSjHoHArnLMH2WY0rYnjND4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1030152520048-ege1191svnn7ouu17kli97rf07ec365r.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1030152520048-l1h1qoqpm5hfbk3pdnht23ej3jsm1d9e.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.homeRemedy"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1030152520048:android:2a472592c3ad0a9ef38fb5",
+        "android_client_info": {
+          "package_name": "com.home.remedy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1030152520048-ege1191svnn7ouu17kli97rf07ec365r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1zVVVZbVTWSjHoHArnLMH2WY0rYnjND4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1030152520048-ege1191svnn7ouu17kli97rf07ec365r.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1030152520048-l1h1qoqpm5hfbk3pdnht23ej3jsm1d9e.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.homeRemedy"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
