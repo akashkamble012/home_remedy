@@ -5,6 +5,7 @@ import 'package:home_remedy/remedy_details.dart';
 import 'package:home_remedy/remedy_search_delegate.dart';
 
 class Home extends StatefulWidget {
+  static const String routeName = 'home';
   const Home({Key? key}) : super(key: key);
 
   @override

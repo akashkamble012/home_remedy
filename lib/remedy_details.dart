@@ -2,12 +2,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
 class RemediesDetailPage extends StatefulWidget {
-  Map<String, dynamic> remedyData;
+   Map<String, dynamic> remedyData;
   final String userId;
   final bool showVoting;
 
-  RemediesDetailPage({required this.remedyData, required this.userId, this.showVoting = true});
+  RemediesDetailPage({
+    required this.remedyData,
+    required this.userId,
+    this.showVoting = true,
+  });
 
   @override
   _RemediesDetailPageState createState() => _RemediesDetailPageState();
@@ -38,90 +46,79 @@ class _RemediesDetailPageState extends State<RemediesDetailPage> {
     }
   }
 
-  void voteOnRemedy(String remedyId, String userId, String voteCategory) {
+  void voteOnRemedy(String remedyId, String userId, String voteCategory) async {
     final voteCountField = 'votes.$voteCategory.count';
     final voteUsersField = 'votes.$voteCategory.users';
 
-    FirebaseFirestore.instance
-        .collection('remedies')
-        .doc(remedyId)
-        .get()
-        .then((snapshot) {
+    final remedyDoc =
+    FirebaseFirestore.instance.collection('remedies').doc(remedyId);
+
+    try {
+      final snapshot = await remedyDoc.get();
       final votes = snapshot.data()?['votes'];
+
       final previousCategory = getPreviousVoteCategory(votes, userId);
 
-      FirebaseFirestore.instance.collection('remedies').doc(remedyId).update({
+      await remedyDoc.update({
         voteCountField: FieldValue.increment(1),
         voteUsersField: FieldValue.arrayUnion([userId]),
-      }).then((value) {
-        if (previousCategory != null && previousCategory != voteCategory) {
-          final previousVoteUsersField = 'votes.$previousCategory.users';
-          FirebaseFirestore.instance
-              .collection('remedies')
-              .doc(remedyId)
-              .update({
-            previousVoteUsersField: FieldValue.arrayRemove([userId]),
-          }).then((value) {
-            if (kDebugMode) {
-              print('Previous vote removed successfully');
-            }
-            updateEffectivenessValue(remedyId);
-            fetchRemedy(remedyId);
-          }).catchError((error) {
-            print('Error removing previous vote: $error');
-          });
-        } else {
-          print('Vote recorded successfully');
-          updateEffectivenessValue(remedyId);
-          fetchRemedy(remedyId);
-        }
-      }).catchError((error) {
-        print('Error recording vote: $error');
       });
-    }).catchError((error) {
-      print('Error fetching remedy: $error');
-    });
+
+      if (previousCategory != null && previousCategory != voteCategory) {
+        final previousVoteUsersField = 'votes.$previousCategory.users';
+
+        await remedyDoc.update({
+          previousVoteUsersField: FieldValue.arrayRemove([userId]),
+        });
+
+        if (kDebugMode) {
+          print('Previous vote removed successfully');
+        }
+      }
+
+      updateEffectivenessValue(remedyId);
+      fetchRemedy(remedyId);
+
+      print('Vote recorded successfully');
+    } catch (error) {
+      print('Error recording vote: $error');
+    }
   }
 
   Future<void> updateEffectivenessValue(String remedyId) async {
     final remedyRef =
-        FirebaseFirestore.instance.collection('remedies').doc(remedyId);
+    FirebaseFirestore.instance.collection('remedies').doc(remedyId);
 
-    // Fetch the remedy document
-    final remedyDoc = await remedyRef.get();
-    final remedyData = remedyDoc.data() as Map<String, dynamic>;
+    try {
+      final remedyDoc = await remedyRef.get();
+      final remedyData = remedyDoc.data() as Map<String, dynamic>;
 
-    // Get the votes and calculate the percentages
-    final votes = remedyData['votes'] as Map<String, dynamic>;
-    final totalVotes =
-        votes.values.fold(0, (sum, category) => sum + category['count'] as int);
+      final votes = remedyData['votes'] as Map<String, dynamic>;
+      final totalVotes = votes.values
+          .fold<int>(0, (sum, category) => sum + category['count'] as int);
 
-    // Fetch the user collection and count the total number of users
-    final userCollection = FirebaseFirestore.instance.collection('users');
-    final userSnapshot = await userCollection.get();
-    final totalUsers = userSnapshot.docs.length;
+      final userCollection = FirebaseFirestore.instance.collection('users');
+      final userSnapshot = await userCollection.get();
+      final totalUsers = userSnapshot.docs.length;
 
-    // Define the threshold percentage
-    final thresholdPercentage =
-        0.6; // Set your desired threshold percentage here
+      final thresholdPercentage = 0.6;
+      final thresholdVotes = (totalVotes * thresholdPercentage).floor();
 
-    // Calculate the threshold number of votes
-    final thresholdVotes = (totalVotes * thresholdPercentage).floor();
+      double combinedPercentage = 0.0;
+      for (final entry in votes.entries) {
+        final categoryVotes = entry.value['count'] as int;
+        final categoryPercentage = categoryVotes / totalVotes;
+        combinedPercentage += categoryPercentage;
+      }
 
-    // Calculate the combined percentage of all categories
-    double combinedPercentage = 0.0;
-    for (final entry in votes.entries) {
-      final categoryVotes = entry.value['count'] as int;
-      final categoryPercentage = categoryVotes / totalVotes;
-      combinedPercentage += categoryPercentage;
-    }
+      if (combinedPercentage >= thresholdPercentage) {
+        final highestVoteCategory = votes.entries.reduce(
+                (a, b) => a.value['count'] > b.value['count'] ? a : b).key;
 
-    // Check if the combined percentage exceeds the threshold
-    if (combinedPercentage >= thresholdPercentage) {
-      final highestVoteCategory = votes.entries
-          .reduce((a, b) => a.value['count'] > b.value['count'] ? a : b)
-          .key;
-      remedyRef.update({'effectiveness': highestVoteCategory});
+        await remedyRef.update({'effectiveness': highestVoteCategory});
+      }
+    } catch (error) {
+      print('Error updating effectiveness value: $error');
     }
   }
 
@@ -143,19 +140,16 @@ class _RemediesDetailPageState extends State<RemediesDetailPage> {
     final userId = widget.userId;
 
     if (voteCategory == 'effective' && votedEffective) {
-      // Remove user's vote if already voted as effective
       setState(() {
         votedEffective = false;
       });
       voteOnRemedy(remedyId, userId, 'unknown');
     } else if (voteCategory == 'notEffective' && votedNotEffective) {
-      // Remove user's vote if already voted as notEffective
       setState(() {
         votedNotEffective = false;
       });
       voteOnRemedy(remedyId, userId, 'unknown');
     } else {
-      // Vote for the selected category
       setState(() {
         if (voteCategory == 'effective') {
           votedEffective = true;
@@ -169,20 +163,22 @@ class _RemediesDetailPageState extends State<RemediesDetailPage> {
     }
   }
 
-  void fetchRemedy(String remedyId) {
-    FirebaseFirestore.instance
-        .collection('remedies')
-        .doc(remedyId)
-        .get()
-        .then((snapshot) {
+  void fetchRemedy(String remedyId) async {
+    final remedyDoc =
+    FirebaseFirestore.instance.collection('remedies').doc(remedyId);
+
+    try {
+      final snapshot = await remedyDoc.get();
+
       setState(() {
         widget.remedyData = snapshot.data() as Map<String, dynamic>;
       });
+
       checkVoteStatus();
       print('Remedy fetched successfully');
-    }).catchError((error) {
+    } catch (error) {
       print('Error fetching remedy: $error');
-    });
+    }
   }
 
   @override
@@ -197,17 +193,19 @@ class _RemediesDetailPageState extends State<RemediesDetailPage> {
 
     ElevatedButton effectiveButton = ElevatedButton.icon(
       onPressed: () => vote('effective'),
-      icon: votedEffective
-          ? const Icon(Icons.thumb_up_alt_rounded, color: Colors.green)
-          : const Icon(Icons.thumb_up_alt_rounded, color: Colors.white),
+      icon: Icon(
+        votedEffective ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_rounded,
+        color: votedEffective ? Colors.green : Colors.white,
+      ),
       label: const Text('Effective'),
     );
 
     ElevatedButton notEffectiveButton = ElevatedButton.icon(
       onPressed: () => vote('notEffective'),
-      icon: votedNotEffective
-          ? const Icon(Icons.thumb_down_alt_rounded, color: Colors.red)
-          : const Icon(Icons.thumb_down_alt_rounded, color: Colors.white),
+      icon: Icon(
+        votedNotEffective ? Icons.thumb_down_alt_rounded : Icons.thumb_down_alt_rounded,
+        color: votedNotEffective ? Colors.red : Colors.white,
+      ),
       label: const Text('Not Effective'),
     );
 
@@ -313,25 +311,24 @@ class _RemediesDetailPageState extends State<RemediesDetailPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                if(widget.showVoting)
-                const Text(
-                  'Vote:',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+                if (widget.showVoting) ...[
+                  const Text(
+                    'Vote:',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
                   ),
-                ),
-                if(widget.showVoting)
                   const SizedBox(height: 8),
-                if(widget.showVoting)
                   Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    effectiveButton,
-                    notEffectiveButton,
-                  ],
-                ),
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      effectiveButton,
+                      notEffectiveButton,
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

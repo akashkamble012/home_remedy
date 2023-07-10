@@ -22,7 +22,6 @@ class _LoginPageState extends State<LoginPage> {
 
   bool isLoading = false;
 
-  // Rest of the code...
 
   void _switchAuthMode() {
     setState(() {
@@ -39,7 +38,6 @@ class _LoginPageState extends State<LoginPage> {
         password: password,
       );
 
-      // Add user data to Firestore
       await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
         'name': name,
         'email': email,
@@ -47,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
         'gender': gender,
       });
       if(userCredential != null) {
-        Navigator.of(context).pushNamed('/');
+        Navigator.of(context).pushReplacementNamed('home');
       }
 
       print('User signed up successfully');
@@ -64,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
         password: password,
       );
       if(user != null) {
-        Navigator.of(context).pushNamed('/');
+        Navigator.of(context).pushReplacementNamed('home');
       }
       print('User logged in successfully');
     } catch (e) {

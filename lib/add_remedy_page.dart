@@ -63,10 +63,19 @@ class _AddRemedyPageState extends State<AddRemedyPage> {
         'note': note,
         'effectiveness': effectiveness ?? 'Unknown',
         'votes': {
-          'effective': 0,
-          'notEffective': 0,
-          'unknown': 0,
-        },
+          'effective': {
+            'count': 0,
+            'users': [],
+          },
+          'notEffective': {
+            'count': 0,
+            'users': [],
+          },
+          'unknown': {
+            'count': 0,
+            'users': [],
+          },
+        }
       };
       print("BODY :: $body");
       FirebaseFirestore.instance
@@ -204,7 +213,6 @@ class _AddRemedyPageState extends State<AddRemedyPage> {
                         )
                       : ElevatedButton(
                           onPressed: () async {
-// Get a reference to the 'remedies' collection
 //                             final CollectionReference remediesRef = FirebaseFirestore.instance.collection('remedies');
 //
 // // Create a batch
@@ -230,9 +238,8 @@ class _AddRemedyPageState extends State<AddRemedyPage> {
 //                               },
 //                               },});
 //                             }
-
-// Commit the batched write operation
-//              //               await batch.commit();
+//
+//                            await batch.commit();
 
 
                             FocusScope.of(context).unfocus();

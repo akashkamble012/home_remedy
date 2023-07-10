@@ -29,20 +29,17 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.deepPurple),
-
-        // Add any other theme customizations here
       ),
       routes: {
+        'home' : (context) => const Home(),
         '/addRemedy': (context) => const AddRemedyPage(),
         '/login': (context) => const LoginPage(),
         '/profile' : (context) => const ProfilePage()
       },
-      initialRoute: '/',
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            // Show a loading screen while checking the user's authentication state
             return const Scaffold(
               body: Center(
                 child: CircularProgressIndicator(),
@@ -50,10 +47,8 @@ class MyApp extends StatelessWidget {
             );
           } else {
             if (snapshot.hasData) {
-              // User is logged in, navigate to the home page
               return const Home();
             } else {
-              // User is not logged in, navigate to the login page
               return const LoginPage();
             }
           }
@@ -63,92 +58,3 @@ class MyApp extends StatelessWidget {
   }
 }
 
-List<String> ingredients = [
-  "Acupuncture",
-  "Aloe Vera",
-  "Apple Cider Vinegar",
-  "Ashwagandha",
-  "B-Vitamins",
-  "Baking Soda",
-  "Benzoyl Peroxide",
-  "Boswellia",
-  "Butterbur",
-  "Cabbage Juice",
-  "Caffeine",
-  "Calendula",
-  "Cayenne Pepper",
-  "Chamomile",
-  "Chondroitin",
-  "Coconut Oil",
-  "Coconut Water",
-  "Comfrey Leaf",
-  "CoQ10",
-  "Cranberry Juice",
-  "Eucalyptus",
-  "Eucalyptus Oil",
-  "Fennel",
-  "Feverfew",
-  "Fish Oil",
-  "Garlic",
-  "Ginger",
-  "Ginseng",
-  "Glucosamine",
-  "Green Tea",
-  "Honey",
-  "Iron",
-  "Lavender",
-  "Lemon",
-  "Lemon Balm",
-  "Licorice",
-  "Licorice Extract",
-  "Licorice Root",
-  "Magnesium",
-  "Manuka Honey",
-  "Marshmallow",
-  "Marshmallow Root",
-  "Melatonin",
-  "Milk",
-  "MSM",
-  "Nasal Irrigation",
-  "Neem Oil",
-  "Nettle",
-  "Nigella Sativa",
-  "Papaya",
-  "Passionflower",
-  "Peppermint",
-  "Peppermint Oil",
-  "Probiotics",
-  "Quercetin",
-  "Retinol",
-  "Rhodiola Rosea",
-  "Riboflavin",
-  "Sage",
-  "Salicylic Acid",
-  "Salt Water",
-  "Slippery Elm",
-  "Slippery Elm Bark",
-  "Tea Tree Oil",
-  "Thyme",
-  "Turmeric",
-  "Valerian Root",
-  "Vitamin C",
-  "White Willow Bark",
-  "Wild Cherry Bark",
-  "Willow Bark",
-  "Witch Hazel",
-  "Zinc",
-];
-
-List<String> symptoms = [
-  "Acne",
-  "Allergies",
-  "Cough",
-  "Fatigue",
-  "Headache",
-  "Healing Ulcers",
-  "Healing Wounds",
-  "Indigestion",
-  "Insomnia",
-  "Joint Pain",
-  "Sore Throat",
-];
